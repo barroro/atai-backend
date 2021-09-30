@@ -48,6 +48,7 @@ export async function authenticate(req: Request, res: Response) {
     const payload = {
       userId: userFound.id,
       email: userFound.email,
+      username: userFound.username,
     };
     const token = jwt.sign(payload, jwtSecret);
     return res.status(200).json({

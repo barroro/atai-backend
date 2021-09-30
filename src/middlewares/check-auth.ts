@@ -26,8 +26,8 @@ export const Auth = async (req: any, res: Response, next: NextFunction) => {
       return ResponseHandler().fail.unauthorized(res, INCORRECT_JWT_SIGN);
     }
     const decoded: any = jwt.verify(token, jwtSecret);
-    req.user = decoded;
     const user = await userRepository.findOne(decoded.userId);
+    req.user = user;
     if (!user) return ResponseHandler().fail.unauthorized(res, AUTH_FAILED);
 
     next();
