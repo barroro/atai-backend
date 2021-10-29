@@ -27,20 +27,22 @@ export async function getPictograms(req: Request, res: Response) {
     const pictogramRepository = getRepository(Pictogram);
     const count = await pictogramRepository.count();
 
-    const query = pictogramRepository.createQueryBuilder("pictogram");
+    const query = pictogramRepository
+      .createQueryBuilder("pictogram")
+      .leftJoinAndSelect("pictogram.category", "category");
 
     if (pagedRequest.keyword)
       query
-        .where(
-          `LOWER(pictogram.name) LIKE '%${pagedRequest.keyword.toLowerCase()}%'`
-        )
-        .orWhere(
-          `LOWER(pictogram.description) LIKE '%${pagedRequest.keyword.toLowerCase()}%'`
-        );
+        .where("LOWER(pictogram.name) LIKE :name", {
+          name: `%${pagedRequest.keyword.toLowerCase()}%`,
+        })
+        .orWhere("LOWER(pictogram.description) LIKE :description", {
+          description: `%${pagedRequest.keyword.toLowerCase()}%`,
+        });
 
     if (pagedRequest.orderKey && pagedRequest.orderDirection)
       query.orderBy(
-        `Pictogram.${pagedRequest.orderKey}`,
+        `pictogram.${pagedRequest.orderKey}`,
         pagedRequest.orderDirection
       );
 
@@ -76,7 +78,6 @@ export async function createPictogram(req: Request, res: Response) {
       message: error.details.map((x) => x.message).join(", "),
     });
   }
-
   try {
     const exists: Pictogram | undefined = await pictogramRepository.findOne({
       name: value.name,
@@ -87,7 +88,12 @@ export async function createPictogram(req: Request, res: Response) {
         message: "Pictogram already exists",
       });
 
-    const pictogram = pictogramRepository.create(value);
+    const input = {
+      ...value,
+      imagePath: req.file ? `uploads/${req.file.filename}` : null,
+    };
+
+    const pictogram = pictogramRepository.create(input);
     await pictogramRepository.save(pictogram);
     return res.status(200).json({
       pictogram,
@@ -149,7 +155,7 @@ export async function updatePictogram(req: Request, res: Response) {
     const pictogram = await pictogramRepository.findOneOrFail(_id);
     pictogram.name = value.name;
     pictogram.description = value.description;
-    pictogram.categoryId = value.category;
+    // pictogram.categoryId = value.category;
     const pictogramUpdated = await pictogramRepository.save(pictogram);
     return res.status(200).json({
       pictogram: pictogramUpdated,

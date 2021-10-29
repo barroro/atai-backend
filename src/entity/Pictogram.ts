@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Category } from "./Category";
 
 @Entity()
@@ -15,8 +9,7 @@ export class Pictogram {
   @Column()
   name: string;
 
-  @OneToOne(() => Category)
-  @JoinColumn()
+  @ManyToOne(() => Category, (category) => category.pictograms)
   category: Category;
 
   @Column()
@@ -24,4 +17,7 @@ export class Pictogram {
 
   @Column()
   description: string;
+
+  @Column()
+  imagePath: string;
 }

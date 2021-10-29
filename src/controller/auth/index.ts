@@ -44,7 +44,6 @@ export async function authenticate(req: Request, res: Response) {
         error_code: AUTH_FAILED,
         message: "UNAUTHORIZED",
       });
-    console.log(verify);
     const payload = {
       userId: userFound.id,
       email: userFound.email,
